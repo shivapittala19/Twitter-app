@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/000000/twitter.png">
+    <title>{% block title %}Log in to Twitter{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+    {% block styles %}{% endblock %}
+  </head>
+  <body>
+    {% block body %}
+      <div class="container">
+        <div class="header">
+          <img src="https://img.icons8.com/color/48/000000/twitter.png" alt="Twitter Logo">
+          <h2>Log in to Twitter</h2>
+        </div>
+        <div class="error">
+          {% if error %}
+              <p>{{error}}</p>
+            {% endif %}
+        </div>
+        <div class="message">
+          {% if message %}
+            <p>{{message}}</p>
+          {% endif %}
+        </div>
+        <div class="form">
+          <form method="post" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Phone, email, or username">
+            <input type="password" name="password" placeholder="Password">
+            <button type="submit">Log in</button>
+          </form>
+        </div>
+      
+        <div class="footer">
+          <a href="#">Forgot password?</a> · <a href="{% url 'accounts:register' %}">Sign up for Twitter</a>
+        </div>
+      </div>
+    {% endblock %}
+  </body>
+</html>
+
