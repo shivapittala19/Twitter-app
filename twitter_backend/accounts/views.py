@@ -1,53 +1,54 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.http import HttpResponse
-from django.db import IntegrityError
 from django.contrib.auth.models import User
 
+# rest framework
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import TemplateHTMLRenderer
+
 # App imports
-# from .models import CustomUser
+from  . import serializers
 
-
-def login_view(request):
-    if request.user.is_authenticated:
-        return render(request,'accounts/home.html',{})
-    
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username = username, password = password)
-        if user:
-            if user.is_active:
-                login(request,user)
-                return render(request,'accounts/home.html',{})
-            else:   
-                return HttpResponse("Account Not Active")
-        else:
-            return render(request, "accounts/login.html", {
-                "error": "Invalid username or password"
-            })
-    else:
-        return render(request, 'accounts/login.html')
-
+@api_view(['GET', 'POST'])
+@renderer_classes([TemplateHTMLRenderer])
 def register_view(request):
     if request.user.is_authenticated:
-        return HttpResponse("Already logged")
-    
-    if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
-        password = request.POST.get('password')
-    
-        # create a user.
-        try:
-            user = User.objects.create(username = username, email=email, password = password)
-            # user = authenticate(request, username=username, password=password)
-            user.save()
-        except IntegrityError:
-            return render(request, "accounts/register.html", {
-                "error": "Username already taken"
-            })
+        return Response({"message": "Already logged in"},template_name='accounts/home.html')
 
-        return render(request, "accounts/login.html",{"message":"Sucessfully registered"})
-    else:
-        return render(request, "accounts/register.html")
+    if request.method == 'POST':
+        serializer = serializers.RegistrationSerializer(data=request.data)  
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            email = serializer.validated_data['email']
+ 
+            user = User.objects.create(username=username, email=email)
+            user.set_password(password)
+            user.save()
+            return Response({"message": "Successfully registered"},template_name='accounts/login.html')
+        else:
+            return Response({"error": "username is already taken"}, template_name='accounts/register.html')
+            
+    return Response({"serializer": serializers.RegistrationSerializer()}, template_name='accounts/register.html')
+
+
+@api_view(['GET', 'POST'])
+@renderer_classes([TemplateHTMLRenderer])
+def login_view(request):
+    if request.user.is_authenticated:
+        return Response({"message": "Already logged in"},template_name='accounts/home.html')
+
+    if request.method == 'POST':
+        serializer = serializers.LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return Response({"message": "Successfully logged in"}, template_name='accounts/home.html')
+            else:
+                return Response({"error": "Invalid credentials"}, template_name='accounts/login.html')
+
+    return Response({"serializer": serializers.LoginSerializer()}, template_name='accounts/login.html')
