@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/000000/twitter.png">
     <title>Home</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/home/style1.css' %}" />
 
@@ -135,7 +136,7 @@
 
             <div class="main-section-header">
                 <div class="home-header">
-                    <div class="lucia-profile">
+                    <div class="shiva-profile">
                         <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
                     </div>
                     <h2 class="main-section-title">Home</h2>
@@ -156,11 +157,12 @@
                         <div class="tweet-input">
                             <input type="text" class="tweet-input-button" placeholder="whats's happening">
                         </div>
+                       
                     </div>
                     <div class="edit-tools">
                         <div class="tools-wrapper">
                             <div class="tools">
-                                <img src="{%static 'images/media.svg' %}" alt="media icon" />
+                                <label for="fileInput"><img src="{%static 'images/media.svg' %}" alt="media icon" /></label>                               
                             </div>
                             <div class="tools">
                                 <img src="{%static 'images/gif.svg' %}" alt="gif icon" />
@@ -169,57 +171,48 @@
                             <div class="tools">
                                 <img src="{%static 'images/emoji.svg' %}" alt="emoji icon" />
                             </div>
-                            <div class="tools schedule">
-                                <img src="{%static 'images/schedule.svg' %}" alt="schedule icon" />
-                            </div>
-                            <div class="tools location-icon">
-                                <img src="{%static 'images/location.svg' %}" alt="location icon" />
-                            </div>
                         </div>
                         <div>
                             <button class="post-tweet">Tweet</button>
                         </div>
                     </div>
                 </div>
-
+                {% for tweet in tweets %}
                 <div class="other-tweets-container">
                     <div class="other-tweets">
                         <div class="tweeter">
                             <div class="tweeter-profile">
-                                <img src="{% static 'images/shiva.png' %}" alt="freecodecamp logo" />
+                                <img src="{{ tweet.user_profile.profileImage }}" alt="profie picture" />
                                 <div class="tweeter-name">
                                     <a href="#">
                                         <p>
-                                            <span class="tweeter-account">shivapittala
+                                            <span class="tweeter-account">{{ tweet.user_profile.display_name }}
                                             </span>
                                             <span class="freecodecamp-badge"><img
                                                     src="{% static 'images/verified.svg' %}"
                                                     alt="verification-badge" /></span>
-                                            <span class="tweeter-username">@shivapittala19
+                                            <span class="tweeter-username">@{{ tweet.user_profile.display_name }}
                                             </span>
                                         </p>
                                     </a>
                                 </div>
                             </div>
-                            
+
                             <div class="tweet">
                                 <div class="tweet-details">
                                     <div>
                                         <div class="tweet-text">
                                             <p class="tweet-text">
-                                                Django is a high-level Python web framework that encourages rapid development and clean, pragmatic design. It follows the model-view-controller (MVC) architectural pattern, emphasizing reusability and "don't repeat yourself" (DRY) principles. Django includes an ORM for database interaction, built-in admin interfaces, and extensive documentation.
-                                            </p>
+                                                {{ tweet.content }} </p>
                                         </div>
+                                        {% if tweet.media %}
                                         <div class="tweet-image">
-                                            <img src="{% static 'images/django.jpg' %}" alt="node.js logo" />
+                                            <img src="{{ tweet.media }}" alt="{{ tweet.user_profile.display_name.username }}" />
                                             <div class="tweet-image-caption">
-                                                <p>@shivapittala19</p>
-                                                <p>
-                                                    How to get started with
-                                                    Python and Django framework
-                                                </p>
+                                                <p>@{{ tweet.user_profile.display_name }}</p>
                                             </div>
                                         </div>
+                                        {% endif %}
                                         <div class="tweet-reactions-2">
                                             <div class="replies">
                                                 <div>
@@ -282,6 +275,7 @@
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </main>
