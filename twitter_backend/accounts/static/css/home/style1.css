@@ -166,7 +166,7 @@ nav {
     margin-left: 1rem;
 }
 
-.shiva-profile>img {
+.shiva-profile > img {
     width: 40px;
     border-radius: 50%;
     object-fit: cover;
@@ -635,7 +635,7 @@ main {
 }
 
 .tweet {
-    padding-left: 1rem;
+    margin: 1rem;
 }
 
 .tweet-text {

@@ -70,3 +70,16 @@ class HomePageView(APIView):
                 'tweets': serializer.data,
             }
         )
+
+class ProfilePageView(APIView):
+    
+    def get(self,request,format = None):
+        queryset = Tweet.objects.all()
+        serializer = serializers.TweetSerializer(queryset, many=True)
+        return render(
+            request, 
+            'accounts/profile.html',
+            {
+                'tweets': serializer.data,
+            }
+        )

@@ -1,0 +1,65 @@
+{% extends 'accounts/home.html' %}
+
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/home/style1.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/home/profile.css' %}" />
+{% endblock %}
+
+{% block main-header %}
+<div class="main-section-header">
+    <div class="home-header">
+        <div class="shiva-profile">
+            <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
+        </div>
+        <h2 class="main-section-title">{{ request.user.username }}</h2>
+    </div>
+    <div class="top-tweets-icon">
+        <img src="{% static 'images/stars.svg' %}" alt="top tweets icon" />
+    </div>
+</div>
+{% endblock %}
+
+{% block main-user-tweet %}
+<main-profile>
+    <div class="cover-photo-container">
+        <div class="cover-photo">
+            <img src="{% static 'images/django.jpg' %}" alt="cover photo" />
+        </div>
+    </div>
+    <div class="profile-container">
+        <div class="edit-title-box">
+            <div class="profile-image">
+                <img src="{% static 'images/shiva.png' %} " alt="profile photo" />
+                <div class="edit-profile-button">Edit Profile</div>
+            </div>
+        </div>
+
+        <div class="username-tag">
+            <div class="display-name">{{ request.user.username }}</div>
+            <div class="username">@{{ request.user.username }}</div>
+        </div>
+        <div class="profile-bio">
+                {{ tweets.user_profile.bio }}
+        </div>
+        <div class="joined-date">
+            <div class="date-text">Joined Date</div>
+            <div class="date">Date</div>
+        </div>
+        <div class="follow-ing">
+            <div class="posts">
+                <div class="post-text">Posts</div>
+                <div class="posts-count">100</div>
+            </div>
+            <div class="followers">
+                <div class="follow">Followers</div>
+                <div class="follow-count">100</div>
+            </div>
+            <div class="following">
+                <div class="fin">Following</div>
+                <div class="following-count">200</div>
+            </div>
+        </div>
+    </div>
+</main-profile>
+{% endblock %}

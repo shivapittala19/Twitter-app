@@ -7,8 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/000000/twitter.png">
     <title>Home</title>
+    {% block style %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/home/style1.css' %}" />
-
+    {% endblock %}
 </head>
 
 <body>
@@ -22,7 +23,8 @@
             </a>
             <nav>
                 <div class="nav-item">
-                    <a href="#" class="nav-links">
+                    <a href="" class="nav-links">
+                        <a href="{% url 'accounts:home' %}" class="nav-links">
                         <div class="nav-hover">
                             <div class="nav-icons"><img src="{% static 'images/home.svg' %}" alt="home icon" />
                             </div>
@@ -79,7 +81,7 @@
                 </div>
 
                 <div class="nav-item profile">
-                    <a href="#" class="nav-links">
+                    <a href="{% url 'accounts:profile' %}" class="nav-links">
                         <div class="nav-hover">
                             <div class="nav-icons">
                                 <img src="{% static 'images/profile.svg' %}" alt="profile icon" />
@@ -112,15 +114,17 @@
             </a>
 
             <div class="account">
-                <div class="account-hover">
-                    <div class="shiva-profile">
-                        <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
+                <a href="{% url 'accounts:profile' %}">
+                    <div class="account-hover">
+                        <div class="shiva-profile">
+                            <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
+                        </div>
+                        <div class="shiva-name">
+                            <p class="account-name">Shivapittala</p>
+                            <p class="username">@shivapittala19</p>
+                        </div>
                     </div>
-                    <div class="shiva-name">
-                        <p class="account-name">Shivapittala</p>
-                        <p class="username">@shivapittala19</p>
-                    </div>
-                </div>
+                </a>
             </div>
 
         </div>
@@ -134,6 +138,7 @@
         <!-- MAIN -->
         <div class="main-section">
 
+            {% block main-header %}
             <div class="main-section-header">
                 <div class="home-header">
                     <div class="shiva-profile">
@@ -145,10 +150,13 @@
                     <img src="{% static 'images/stars.svg' %}" alt="top tweets icon" />
                 </div>
             </div>
+            {% endblock%}
 
             <!-- TWEETS SECTION -->
             <div class="tweets-section">
                 <!-- USERS TWEET -->
+
+                {% block main-user-tweet %}
                 <div class="user-tweet">
                     <div class="tweet-input-section">
                         <div class="shiva-profile img-2">
@@ -157,12 +165,13 @@
                         <div class="tweet-input">
                             <input type="text" class="tweet-input-button" placeholder="whats's happening">
                         </div>
-                       
+
                     </div>
                     <div class="edit-tools">
                         <div class="tools-wrapper">
                             <div class="tools">
-                                <label for="fileInput"><img src="{%static 'images/media.svg' %}" alt="media icon" /></label>                               
+                                <label for="fileInput"><img src="{%static 'images/media.svg' %}"
+                                        alt="media icon" /></label>
                             </div>
                             <div class="tools">
                                 <img src="{%static 'images/gif.svg' %}" alt="gif icon" />
@@ -177,6 +186,9 @@
                         </div>
                     </div>
                 </div>
+                {% endblock %}
+
+                {% block tweets %}
                 {% for tweet in tweets %}
                 <div class="other-tweets-container">
                     <div class="other-tweets">
@@ -276,6 +288,7 @@
                     </div>
                 </div>
                 {% endfor %}
+                {% endblock %}
             </div>
         </div>
     </main>
