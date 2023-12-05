@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Show the popup when the button is clicked
+            $("#openPopupButton").click(function() {
+                $("#popupForm").show();
+            });
+
+            // Hide the popup when the close button is clicked
+            $("#closePopupButton").click(function() {
+                $("#popupForm").hide();
+            });
+
+            // Handle form submission via AJAX
+            $("#submitFormButton").click(function() {
+                var formData = new FormData($("#userProfileForm")[0]);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "accounts:popup_form" %}',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function() {
+                        alert('Form submitted successfully!');
+                        $("#popupForm").hide();
+                    },
+                    error: function() {
+                        alert('Error submitting form');
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+     <!-- Button to open the popup -->
+     <button id="openPopupButton">Open Popup</button>
+
+     <!-- Popup form -->
+     <div id="popupForm" style="display: none;">
+         <form id="userProfileForm" method="post" enctype="multipart/form-data">
+             {% csrf_token %}
+             {{ form.as_p }}
+             <button type="button" id="submitFormButton">Submit</button>
+             <button type="button" id="closePopupButton">Close</button>
+         </form>
+     </div>
+</body>
+</html>

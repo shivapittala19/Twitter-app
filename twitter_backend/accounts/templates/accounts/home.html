@@ -10,7 +10,126 @@
     {% block style %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/home/style1.css' %}" />
     {% endblock %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+
+        function togglePopupProfile() {
+            document.getElementById("popup-2").classList.toggle("active");
+        }
+        function togglePopup() {
+            document.getElementById("popup-1").classList.toggle("active");
+        }
+        function togglePopupComment(tweetUid) {
+            document.getElementById("popup-3").classList.toggle("active");
+            var form = popup.querySelector(".form");
+
+            // Add an event listener for the form submission
+            
+
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            var likeButtons = document.querySelectorAll('.like-button');
+
+            likeButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var tweetId = this.getAttribute('data-tweet-id');
+
+                    fetch('/api/increment-like/' + tweetId + '/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({})
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update the like count in the UI
+                            var statisticsElement = this.nextElementSibling;
+                            statisticsElement.innerHTML = data.likes_count;
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var tweetReplies = document.querySelectorAll('.tweet-replies');
+            
+            tweetReplies.forEach(function (reply) {
+                reply.addEventListener('click', function () {
+                    document.getElementById("popup-3").classList.toggle("active");
+                });
+            });
+            var commentForms = document.querySelectorAll('.comments-form');
+            
+           
+
+            commentForms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    var tweetUuid = this.getAttribute('data-comment-tweet-uuid');
+
+                    var formData = new FormData(form);
+                    formData.append('tweet_uuid', tweetUuid);
+
+                    fetch('/api/add-comment/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'  
+                        },
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Comment posted successfully');
+                            } else {
+                                console.error('Error posting comment:', data.errors);
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+
+        function followRequest(profileID) {
+
+            fetch('/api/follow/' + profileID + '/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    var button = document.querySelector('.edit-profile-button');
+                    if (data.is_followed) {
+                        button.innerText = 'Unfollow';
+                    } else {
+                        button.innerText = 'Follow';
+                    }
+                    console.log(data)
+                })
+                .catch(error => console.error('Error:', error));
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Retrieve the initial state (e.g., from the server response or your template context)
+            var isFollowedInitial = '{{ is_followed|lower }}';  // Assuming initial_is_followed is a boolean variable
+            console.log(isFollowedInitial)
+            // Set the initial button text based on the initial state
+            var button = document.getElementById('followButton');
+            if (button) {
+                button.innerText = isFollowedInitial ? 'Unfollow' : 'Follow';
+            }
+        })
+
+    </script>
 </head>
+
 
 <body>
 
@@ -25,12 +144,12 @@
                 <div class="nav-item">
                     <a href="" class="nav-links">
                         <a href="{% url 'accounts:home' %}" class="nav-links">
-                        <div class="nav-hover">
-                            <div class="nav-icons"><img src="{% static 'images/home.svg' %}" alt="home icon" />
+                            <div class="nav-hover">
+                                <div class="nav-icons"><img src="{% static 'images/home.svg' %}" alt="home icon" />
+                                </div>
+                                <div class="home-link nav-text">Home</div>
                             </div>
-                            <div class="home-link nav-text">Home</div>
-                        </div>
-                    </a>
+                        </a>
                 </div>
 
                 <div class="nav-item">
@@ -102,36 +221,114 @@
                     </a>
                 </div>
 
+                <div class="nav-item more">
+                    <a href="{% url 'accounts:logout' %}" class="nav-links">
+                        <div class="nav-hover">
+                            <div class="nav-icons">
+                                <img src="{% static 'images/logout.png' %}" alt="more icon" />
+                            </div>
+                            <div class="logout">Logout</div>
+                        </div>
+                    </a>
+                </div>
+
             </nav>
 
             <a href="#">
                 <div class="button-container">
-                    <button class="tweet-button tweet-button-1">
-                        Tweet
-                    </button>
-                    <button class="tweet-button tweet-button-2"></button>
+                    <button class="tweet-button tweet-button-1" onclick="togglePopup()">Tweet</button>
+                    <button class="tweet-button tweet-button-2" onclick="togglePopup()"></button>
                 </div>
             </a>
 
+            {% block header-profile %}
             <div class="account">
                 <a href="{% url 'accounts:profile' %}">
                     <div class="account-hover">
                         <div class="shiva-profile">
-                            <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
+                            <img src="{{ logged_user.profileImage }}" alt="shiva's profile" />
                         </div>
                         <div class="shiva-name">
-                            <p class="account-name">Shivapittala</p>
-                            <p class="username">@shivapittala19</p>
+                            <p class="account-name">{{ logged_user.display_name }}</p>
+                            <p class="username">@{{ logged_user.display_name }}</p>
                         </div>
                     </div>
                 </a>
             </div>
 
+            {% endblock header-profile %}
+
         </div>
 
     </header>
     {% endblock %}
+    {% block popup %}
+    <pop-up>
+        <div class="popup" id="popup-1">
+            <div class="overlay"> </div>
+            <div class="content">
+                <div class="close-btn" onclick="togglePopup()">&times;</div>
+                <div class="form-container">
+                    <form class="form" action="{% url 'accounts:create-tweet' %}" method="post"
+                        enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="textarea">Caption</label>
+                            <textarea name="content" id="content" rows="10" cols="30"> </textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Upload Image</label>
+                            <input type="file" id="media" name="media" accept="image/*">
+                        </div>
 
+                        <button class="form-submit-btn" type="submit">Tweet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </pop-up>
+    <pop-up>
+        <div class="popup" id="popup-2">
+            <div class="overlay"> </div>
+            <div class="content">
+                <div class="close-btn" onclick="togglePopupProfile()">&times;</div>
+                <div class="form-container">
+
+                    <form class="form" action="{% url 'accounts:edit-profile' %}" method="post"
+                        enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_coverImage">Cover Image:</label>
+                            <input type="file" name="coverImage" id="id_coverImage" accept="image/*"
+                                value="{{ logged_user.coverImage }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_profileImage">Profile Image:</label>
+                            <input type="file" name="profileImage" id="id_profileImage" accept="image/*"
+                                value="{{ logged_user.profileImage }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_bio">Bio:</label>
+                            <textarea name="bio" id="id_bio">{{ logged_user.bio }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_display_name">Display Name:</label>
+                            <input type="text" name="display_name" id="id_display_name"
+                                value="{{ logged_user.display_name }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_website">Website:</label>
+                            <input type="url" name="website" id="id_website" value="{{ logged_user.website }}">
+                        </div>
+
+                        <button class="form-submit-btn" type="submit">save</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </pop-up>
+    {% endblock %}
     <!-- MAIN -->
     {% block main %}
     <main>
@@ -155,7 +352,6 @@
             <!-- TWEETS SECTION -->
             <div class="tweets-section">
                 <!-- USERS TWEET -->
-
                 {% block main-user-tweet %}
                 <div class="user-tweet">
                     <div class="tweet-input-section">
@@ -189,6 +385,7 @@
                 {% endblock %}
 
                 {% block tweets %}
+
                 {% for tweet in tweets %}
                 <div class="other-tweets-container">
                     <div class="other-tweets">
@@ -196,7 +393,7 @@
                             <div class="tweeter-profile">
                                 <img src="{{ tweet.user_profile.profileImage }}" alt="profie picture" />
                                 <div class="tweeter-name">
-                                    <a href="#">
+                                    <a href="{% url 'accounts:profile-detail' profile_id=tweet.user_profile.id %}">
                                         <p>
                                             <span class="tweeter-account">{{ tweet.user_profile.display_name }}
                                             </span>
@@ -205,6 +402,7 @@
                                                     alt="verification-badge" /></span>
                                             <span class="tweeter-username">@{{ tweet.user_profile.display_name }}
                                             </span>
+                                            <span>{{ tweet.updated_at.datetime }}</span>
                                         </p>
                                     </a>
                                 </div>
@@ -219,7 +417,8 @@
                                         </div>
                                         {% if tweet.media %}
                                         <div class="tweet-image">
-                                            <img src="{{ tweet.media }}" alt="{{ tweet.user_profile.display_name.username }}" />
+                                            <img src="{{ tweet.media }}"
+                                                alt="{{ tweet.user_profile.display_name.username }}" />
                                             <div class="tweet-image-caption">
                                                 <p>@{{ tweet.user_profile.display_name }}</p>
                                             </div>
@@ -227,7 +426,8 @@
                                         {% endif %}
                                         <div class="tweet-reactions-2">
                                             <div class="replies">
-                                                <div>
+                                                <div class="tweet-replies"
+                                                    style="cursor: pointer;">
                                                     <svg xmlns:xlink="http://www.w3.org/1999/xlink"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                         aria-hidden="true"
@@ -241,9 +441,10 @@
                                                     </svg>
                                                 </div>
                                                 <div class="statistics">
-                                                    749
+                                                    {{ tweet.comments|length }}
                                                 </div>
                                             </div>
+                                           
                                             <div class="retweets">
                                                 <div>
                                                     <svg xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -263,7 +464,8 @@
                                                 </div>
                                             </div>
                                             <div class="likes">
-                                                <div>
+                                                <div class="like-button" data-tweet-id="{{ tweet.uuid }}"
+                                                    style="cursor: pointer;">
                                                     <svg xmlns:xlink="http://www.w3.org/1999/xlink"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                         aria-hidden="true"
@@ -277,14 +479,41 @@
                                                     </svg>
                                                 </div>
                                                 <div class="statistics">
-                                                    8,231
+                                                    {{ tweet.likes|length }}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <div class="comments">
+                                <pop-up>
+                                    <div class="popup" id="popup-3">
+                                        <div class="overlay"> </div>
+                                        <div class="content">
+                                            <div class="close-btn" onclick="togglePopupComment()">&times;</div>
+                                            <div class="form-container">
+                                                <form class="form comments-form"  method="post" action="{% url 'accounts:add-comment' %}"
+                                                    enctype="multipart/form-data" data-comment-tweet-uuid="{{ tweet.uuid }}"> 
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <label for="textarea">Caption</label>
+                                                        <textarea name="content" id="content" rows="10" cols="30"> </textarea>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="image">Upload Image</label>
+                                                        <input type="file" id="media" name="media" accept="image/*">
+                                                    </div>
+                            
+                                                    <button class="form-submit-btn" type="submit">Tweet</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </pop-up>
+                            </div>
                         </div>
+                       
                     </div>
                 </div>
                 {% endfor %}

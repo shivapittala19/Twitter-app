@@ -30,6 +30,11 @@ class Followers(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     following = models.ManyToManyField(to=User, related_name="following", blank=True)
     followers = models.ManyToManyField(to=User, related_name="followed_user", blank=True)
+    def create_follow(sender,instance,created,**kwargs):
+        if created:
+            user = Followers(user=instance)
+            user.save()
+    models.signals.post_save.connect(create_follow,sender=User)
 
 
 class Tweet(models.Model):
@@ -40,24 +45,24 @@ class Tweet(models.Model):
     likes = models.ManyToManyField(to=User, blank=True, related_name='tweet_likes')
     is_video = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now_add=True)
-    
-# class TweetComments(models.Model):
-#     # fields
-#     # user, tweet, comment, date, media, likes(User)
-#     pass
-    
-# class TweetLike(models.Model):
-#     # fields
-#     # user, tweet, created_at
-#     pass
+
+class TweetComments(models.Model):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(to=Tweet, on_delete=models.CASCADE,related_name='comment')
+    comment_content = models.TextField(max_length=200, blank=True, null=True)
+    date = models.DateTimeField(auto_now_add=True)
+    media = models.ImageField(upload_to='comment-media', blank=True, null=True)
+    likes = models.ManyToManyField(User, blank=True, related_name='comment_likes')
+
+
+class TweetLike(models.Model):
+    user =  models.ForeignKey(to=User, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet,on_delete=models.CASCADE)
+
 
 # class TweetRetweet(models.Model):
-#     # fields
-#     # user, tweet, created_at
-#     pass
+#     user =  models.ForeignKey(to=User, on_delete=models.CASCADE)
+#     retweet = models.ForeignKey(Tweet,on_delete=models.CASCADE)
+#     updated_at = models.DateTimeField(auto_now_add=True)
 
-# class Media(models.Model):
-#     # fields
-#     # user, image/video, type, description, url, created_at
-#     pass
 

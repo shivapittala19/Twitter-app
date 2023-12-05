@@ -6,6 +6,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/home/profile.css' %}" />
 {% endblock %}
 
+
 {% block main-header %}
 <div class="main-section-header">
     <div class="home-header">
@@ -24,27 +25,30 @@
 <main-profile>
     <div class="cover-photo-container">
         <div class="cover-photo">
-            <img src="{% static 'images/django.jpg' %}" alt="cover photo" />
+            <img src="{{ logged_user.coverImage }}" alt="cover photo" />
         </div>
     </div>
     <div class="profile-container">
         <div class="edit-title-box">
             <div class="profile-image">
-                <img src="{% static 'images/shiva.png' %} " alt="profile photo" />
-                <div class="edit-profile-button">Edit Profile</div>
+                <img src="{{ logged_user.profileImage }} " alt="profile photo" />
+                <button class="edit-profile-button" onclick="togglePopupProfile()">Edit Profile</button>
             </div>
         </div>
 
         <div class="username-tag">
-            <div class="display-name">{{ request.user.username }}</div>
-            <div class="username">@{{ request.user.username }}</div>
+            <div class="display-name">{{ logged_user.display_name }}</div>
+            <div class="username">@{{ logged_user.display_name}}</div>
         </div>
         <div class="profile-bio">
-                {{ tweets.user_profile.bio }}
+            {{ logged_user.bio }}
+        </div>
+        <div class="website" style="margin-top: 1rem;margin-bottom:1rem">
+            <b style="font-weight: 700;">Website</b>{{ logged_user.website}}
         </div>
         <div class="joined-date">
             <div class="date-text">Joined Date</div>
-            <div class="date">Date</div>
+            <div class="date">{{logged_user.updated_at }}</div>
         </div>
         <div class="follow-ing">
             <div class="posts">
