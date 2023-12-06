@@ -82,6 +82,7 @@ class HomePageView(APIView):
         )
 
 class ProfilePageView(APIView):
+    authentication_classes = [SessionAuthentication]
     def get(self,request,format = None):
         queryset = Tweet.objects.filter(user = request.user).order_by('-updated_at')
         serializer = serializers.TweetSerializer(queryset, many=True)
@@ -92,10 +93,14 @@ class ProfilePageView(APIView):
             'accounts/profile.html',
             {   'logged_user' : user_serializer.data,
                 'tweets': serializer.data,
+                'posts': queryset,
+                'following':request.user.followers.following.all(),
+                'followers':request.user.followers.followers.all(),
             }
         )
 
 class EditProfileView(APIView):
+    authentication_classes = [SessionAuthentication]
     def post(self, request, format = None):
         user_profile = request.user.profile  
         serializer = serializers.UserProfileSerializer(user_profile, data=request.data )
@@ -104,6 +109,7 @@ class EditProfileView(APIView):
         return HttpResponseRedirect(reverse('accounts:profile'))
 
 class CreateTweetView(APIView):
+    authentication_classes = [SessionAuthentication]
     def post(self, request, *args, **kwargs):
         serializer = serializers.TweetSaveSerializer(data=request.data)
         if serializer.is_valid():
@@ -113,6 +119,7 @@ class CreateTweetView(APIView):
 
 from django.shortcuts import get_object_or_404
 class IncrementLikeView(APIView):
+    authentication_classes = [SessionAuthentication]
     def post(self, request, tweet_uuid, *args, **kwargs):
         tweet = get_object_or_404(Tweet, uuid=tweet_uuid)
         if request.user not in tweet.likes.all():
@@ -125,7 +132,7 @@ class IncrementLikeView(APIView):
 
 class ProfileDetailView(APIView):
     template_name = 'accounts/profile.html'
-
+    authentication_classes = [SessionAuthentication]
     def get(self, request, profile_id):
         user_profile = UserProfile.objects.get(id=profile_id)    
         queryset = Tweet.objects.filter(user = user_profile.user).order_by('-updated_at')
@@ -135,17 +142,21 @@ class ProfileDetailView(APIView):
         current_user = UserProfile.objects.get(user = request.user)
         curent_user_serializer = serializers.UserProfileSerializer(current_user)
         
-        profile_user_follow = Followers.objects.get(user = request.user )
-        current_user_follow = Followers.objects.get(user = user_profile.user)
-        if request.user in current_user_follow.following.all():
-            is_followed = False
+        profile_user_follow = request.user.followers
+        current_user_follow = user_profile.user.followers
+
+        if user_profile.user in profile_user_follow.following.all():
+            is_following = False
         else:
-            is_followed = True
+            is_following = True
         return render(
             request, 
             'accounts/others-profile.html',
             {   
-                'is_followed':is_followed,
+                'posts' : queryset,
+                'following':current_user_follow.following.all(),
+                'followers':current_user_follow.followers.all(),
+                'is_following':is_following,
                 'profile_id':profile_id,
                 'logged_user' : curent_user_serializer.data ,
                 'specific' : user_serializer.data,
@@ -154,41 +165,35 @@ class ProfileDetailView(APIView):
         )
 
 class FollowUser(APIView):
+    authentication_classes = [SessionAuthentication]
+    
     def post(self, request,pk):
+        user_to_toggle = User.objects.get(id=pk)
         current_user = request.user
-        profile_user = UserProfile.objects.get(id=pk).user
+        current_user_profile = request.user.followers
+        user_to_toggle_profile = user_to_toggle.followers
         
-        profile_user_follow = Followers.objects.get(user = current_user )
-        current_user_follow = Followers.objects.get(user = profile_user)
-        is_followed = False
-        if profile_user not in current_user_follow.following.all():
-            current_user_follow.following.add(profile_user)
-            profile_user_follow.followers.add(current_user)
-            is_followed = True
+        is_following = current_user_profile.following.filter(username = user_to_toggle.username).exists()
+
+        if is_following:
+            current_user_profile.following.remove(user_to_toggle)
+            user_to_toggle_profile.followers.remove(current_user)
+            
         else:
-            current_user_follow.following.remove(profile_user)
-            profile_user_follow.followers.remove(current_user)
-            is_followed = False
+            current_user_profile.following.add(user_to_toggle)
+            user_to_toggle_profile.followers.add(current_user)
 
         return JsonResponse(
             {
-                'following':current_user_follow.following.count(),
-                'followers':current_user_follow.followers.count(),
-                'is_followed': is_followed
-            }
-        )
-
-
+                'is_following': not is_following,
+                'following':user_to_toggle_profile.following.count(),
+                'followers':user_to_toggle_profile.followers.count(),
+            })
 
 class AddCommentAPIView(APIView):
-    def post(self, request ,*args, **kwargs):
-        tweet_uuid = request.data['tweet_uuid']
+    def post(self, request, tweet_uuid, *args, **kwargs):
         tweet = get_object_or_404(Tweet, uuid=tweet_uuid)
         serializer = serializers.CommentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user, tweet=tweet)
-            # return Response({'success': True}, status=status.HTTP_201_CREATED)
-            return JsonResponse({'success': True})
-        else:
-            # return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-            return JsonResponse({'success': False})
+        return HttpResponseRedirect(reverse('accounts:home'))

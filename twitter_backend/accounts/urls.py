@@ -16,5 +16,5 @@ urlpatterns = [
     path('follow/<int:pk>/',views.FollowUser.as_view(),name="follow"),
     path('create-tweet/',views.CreateTweetView.as_view(),name="create-tweet"),
     path('increment-like/<uuid:tweet_uuid>/', views.IncrementLikeView.as_view(), name='increment_like'),
-    path('add-comment/', views.AddCommentAPIView.as_view(), name='add-comment'),
+    path('add-comment/<uuid:tweet_uuid>/', views.AddCommentAPIView.as_view(), name='add-comment'),
 ]   

@@ -48,20 +48,20 @@
         </div>
         <div class="joined-date">
             <div class="date-text">Joined Date</div>
-            <div class="date">{{logged_user.updated_at }}</div>
+            <div class="date" id="joined-date">{{logged_user.updated_at }}</div>
         </div>
         <div class="follow-ing">
             <div class="posts">
                 <div class="post-text">Posts</div>
-                <div class="posts-count">100</div>
+                <div class="posts-count">{{posts|length}}</div>
             </div>
             <div class="followers">
                 <div class="follow">Followers</div>
-                <div class="follow-count">100</div>
+                <div class="follow-count">{{followers|length}}</div>
             </div>
             <div class="following">
                 <div class="fin">Following</div>
-                <div class="following-count">200</div>
+                <div class="following-count">{{following|length}}</div>
             </div>
         </div>
     </div>

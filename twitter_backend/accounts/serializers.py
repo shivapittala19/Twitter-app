@@ -69,3 +69,11 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TweetComments
         fields = ['comment_content', 'media']
+    
+    def validate(self, data):
+        comment_content = data.get('comment_content')
+        media = data.get('media')
+        if not comment_content and not media:
+            raise serializers.ValidationError("Either 'comment_content' or 'media' is required.")
+
+        return data

@@ -1,6 +1,19 @@
 {% extends "accounts/profile.html" %}
 {% load static %}
 {% block main-user-tweet %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Retrieve the initial state (e.g., from the server response or your template context)
+        var isFollowedInitial = '{{ is_following|lower }}';  // Assuming initial_is_followed is a boolean variable
+        console.log(isFollowedInitial)
+        // Set the initial button text based on the initial state
+        var button = document.getElementById('followButton');
+        if (button) {
+            button.innerText = isFollowedInitial ? 'Unfollow' : 'Follow';
+        }
+        
+    })
+</script>
 <main-profile>
     <div class="cover-photo-container">
         <div class="cover-photo">
@@ -11,7 +24,7 @@
         <div class="edit-title-box">
             <div class="profile-image">
                 <img src="{{ specific.profileImage }} " alt="profile photo" />
-                <button class="edit-profile-button" id="followButton" onclick="followRequest('{{ profile_id }}')">Follow</button>
+                <button class="edit-profile-button" id="followButton" onclick="followRequest('{{ profile_id }}')"></button>
             </div>
         </div>
 
@@ -27,20 +40,20 @@
         </div>
         <div class="joined-date">
             <div class="date-text">Joined Date</div>
-            <div class="date">{{specific.updated_at }}</div>
+            <div class="date" id="joined-date">{{specific.updated_at }}</div>
         </div>
         <div class="follow-ing">
             <div class="posts">
                 <div class="post-text">Posts</div>
-                <div class="posts-count">100</div>
+                <div class="posts-count">{{posts|length}}</div>
             </div>
             <div class="followers">
                 <div class="follow">Followers</div>
-                <div class="follow-count">100</div>
+                <div class="follow-count" id="followers-count">{{followers|length}}</div>
             </div>
             <div class="following">
                 <div class="fin">Following</div>
-                <div class="following-count">200</div>
+                <div class="following-count" id="following-count">{{following|length}}</div>
             </div>
         </div>
     </div>

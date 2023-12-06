@@ -19,14 +19,7 @@
         function togglePopup() {
             document.getElementById("popup-1").classList.toggle("active");
         }
-        function togglePopupComment(tweetUid) {
-            document.getElementById("popup-3").classList.toggle("active");
-            var form = popup.querySelector(".form");
-
-            // Add an event listener for the form submission
-            
-
-        }
+        
         document.addEventListener("DOMContentLoaded", function () {
             var likeButtons = document.querySelectorAll('.like-button');
 
@@ -53,45 +46,6 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            var tweetReplies = document.querySelectorAll('.tweet-replies');
-            
-            tweetReplies.forEach(function (reply) {
-                reply.addEventListener('click', function () {
-                    document.getElementById("popup-3").classList.toggle("active");
-                });
-            });
-            var commentForms = document.querySelectorAll('.comments-form');
-            
-           
-
-            commentForms.forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    event.preventDefault();
-                    var tweetUuid = this.getAttribute('data-comment-tweet-uuid');
-
-                    var formData = new FormData(form);
-                    formData.append('tweet_uuid', tweetUuid);
-
-                    fetch('/api/add-comment/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'  
-                        },
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                console.log('Comment posted successfully');
-                            } else {
-                                console.error('Error posting comment:', data.errors);
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
-                });
-            });
-        });
 
         function followRequest(profileID) {
 
@@ -105,27 +59,29 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    var button = document.querySelector('.edit-profile-button');
-                    if (data.is_followed) {
+                    var button = document.getElementById('followButton');
+                    if (data.is_following) {
                         button.innerText = 'Unfollow';
                     } else {
                         button.innerText = 'Follow';
                     }
-                    console.log(data)
+                    document.getElementById('followers-count').innerText = data.followers
+                    document.getElementById('following-count').innerHTML = data.following
                 })
                 .catch(error => console.error('Error:', error));
         };
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Retrieve the initial state (e.g., from the server response or your template context)
-            var isFollowedInitial = '{{ is_followed|lower }}';  // Assuming initial_is_followed is a boolean variable
-            console.log(isFollowedInitial)
-            // Set the initial button text based on the initial state
-            var button = document.getElementById('followButton');
-            if (button) {
-                button.innerText = isFollowedInitial ? 'Unfollow' : 'Follow';
-            }
-        })
+            var joinedDateElement = document.getElementById('joined-date');
+            var joinedDate = joinedDateElement.textContent; 
+    
+            var parsedDate = new Date(joinedDate);
+    
+            var formattedDate = new Intl.DateTimeFormat().format(parsedDate);
+    
+            joinedDateElement.textContent = formattedDate;
+        });
+        
 
     </script>
 </head>
@@ -356,7 +312,7 @@
                 <div class="user-tweet">
                     <div class="tweet-input-section">
                         <div class="shiva-profile img-2">
-                            <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
+                            <img src="{{ logged_user.profileImage }}" alt="shiva's profile" />
                         </div>
                         <div class="tweet-input">
                             <input type="text" class="tweet-input-button" placeholder="whats's happening">
@@ -426,8 +382,7 @@
                                         {% endif %}
                                         <div class="tweet-reactions-2">
                                             <div class="replies">
-                                                <div class="tweet-replies"
-                                                    style="cursor: pointer;">
+                                                <div class="tweet-replies" style="cursor: pointer;">
                                                     <svg xmlns:xlink="http://www.w3.org/1999/xlink"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                         aria-hidden="true"
@@ -444,7 +399,7 @@
                                                     {{ tweet.comments|length }}
                                                 </div>
                                             </div>
-                                           
+
                                             <div class="retweets">
                                                 <div>
                                                     <svg xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -483,37 +438,41 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="user-tweet">
+                                            <form id="commentForm" action="{% url 'accounts:add-comment' tweet_uuid=tweet.uuid %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="tweet-input-section">
+                                                    <div class="shiva-profile img-2">
+                                                        <img src="{{ logged_user.profileImage }}"
+                                                            alt="shiva's profile" />
+                                                    </div>
+                                                    <div class="tweet-input">
+                                                        <input type="text" class="tweet-input-button"
+                                                            placeholder="whats's happening" name="comment_content">
+                                                    </div>
+                                                </div>
+                                                <div class="edit-tools">
+                                                    <div class="tools-wrapper">
+                                                        <div class="tools">
+                                                            <label for="image"><img src="{% static 'images/media.svg' %}"
+                                                                    alt="media icon" /></label>
+                                                            <input type="file" id="image" name="media" accept="image/*">
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <button class="post-tweet" type="submit">Tweet</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
-                            <div class="comments">
-                                <pop-up>
-                                    <div class="popup" id="popup-3">
-                                        <div class="overlay"> </div>
-                                        <div class="content">
-                                            <div class="close-btn" onclick="togglePopupComment()">&times;</div>
-                                            <div class="form-container">
-                                                <form class="form comments-form"  method="post" action="{% url 'accounts:add-comment' %}"
-                                                    enctype="multipart/form-data" data-comment-tweet-uuid="{{ tweet.uuid }}"> 
-                                                    {% csrf_token %}
-                                                    <div class="form-group">
-                                                        <label for="textarea">Caption</label>
-                                                        <textarea name="content" id="content" rows="10" cols="30"> </textarea>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="image">Upload Image</label>
-                                                        <input type="file" id="media" name="media" accept="image/*">
-                                                    </div>
-                            
-                                                    <button class="form-submit-btn" type="submit">Tweet</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </pop-up>
-                            </div>
+
+
                         </div>
-                       
+
                     </div>
                 </div>
                 {% endfor %}
