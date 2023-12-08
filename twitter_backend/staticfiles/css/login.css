@@ -1,0 +1,95 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f8fa;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 320px;
+    max-width: 90%;
+  }
+
+  .header {
+    padding: 20px;
+    text-align: center;
+  }
+
+  .header img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .form {
+    padding: 20px;
+  }
+
+  .form input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .form button {
+    background-color: #1da1f2;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .form button:hover {
+    background-color: #0d8bf0;
+  }
+
+  .footer {
+    padding: 10px;
+    text-align: center;
+  }
+
+  .footer a {
+    color: #1da1f2;
+    text-decoration: none;
+  }
+
+  .error>p{
+    color: white;
+    background-color: lightcoral;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    width: 70%;
+    justify-self: center;
+    margin-left: 10%;
+  }
+
+  .message>p{
+    color: white;
+    background-color:lightgreen;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    width: 70%;
+    justify-self: center;
+    margin-left: 10%;
+  }
+
+  @media (max-width: 600px) {
+    .container {
+      width: 90%;
+    }
+  }
