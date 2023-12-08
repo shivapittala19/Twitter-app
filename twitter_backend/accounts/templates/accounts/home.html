@@ -19,9 +19,10 @@
         function togglePopup() {
             document.getElementById("popup-1").classList.toggle("active");
         }
-        
+
         document.addEventListener("DOMContentLoaded", function () {
             var likeButtons = document.querySelectorAll('.like-button');
+
 
             likeButtons.forEach(function (button) {
                 button.addEventListener('click', function () {
@@ -46,6 +47,16 @@
             });
         });
 
+        document.addEventListener("click", function (event) {
+            // Close the dropdown when clicking outside of it
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var dropdown = dropdowns[i];
+                if (!event.target.matches('.more-icon img') && !event.target.matches('.dropdown-content a')) {
+                    dropdown.style.display = 'none';
+                }
+            }
+        });
 
         function followRequest(profileID) {
 
@@ -73,19 +84,151 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             var joinedDateElement = document.getElementById('joined-date');
-            var joinedDate = joinedDateElement.textContent; 
-    
+            var joinedDate = joinedDateElement.textContent;
             var parsedDate = new Date(joinedDate);
-    
             var formattedDate = new Intl.DateTimeFormat().format(parsedDate);
-    
             joinedDateElement.textContent = formattedDate;
         });
-        
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var retweetButton = document.querySelectorAll('.retweet-button');
+
+            retweetButton.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var tweetUuid = this.getAttribute('data-retweet-id');
+                    console.log(tweetUuid)
+                    fetch('/api/retweet/' + tweetUuid + '/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ tweet_uuid: tweetUuid })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            //document.getElementById('retweet-count').innerText = data.retweets
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            })
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var retweetButton = document.querySelectorAll('.bookmark-icon');
+
+            retweetButton.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var tweetUuid = this.getAttribute('data-bookmark-id');
+                    console.log(tweetUuid)
+                    fetch('/api/bookmark/' + tweetUuid + '/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ tweet_uuid: tweetUuid })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            //document.getElementById('retweet-count').innerText = data.retweets
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            })
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Retrieve the initial state (e.g., from the server response or your template context)
+            var isFollowedInitial = '{{ is_following|lower }}';  // Assuming initial_is_followed is a boolean variable
+            console.log(isFollowedInitial)
+            // Set the initial button text based on the initial state
+            var button = document.getElementById('followButton');
+            if (button) {
+                button.innerText = isFollowedInitial ? 'Unfollow' : 'Follow';
+            }
+
+        })
+        function toggleDropdown(icon) {
+            var dropdownMenu = icon.nextElementSibling;
+            dropdownMenu.style.display = (dropdownMenu.style.display === "block") ? "none" : "block";
+        }
+
+        function confirmDelete(tweetUuid) {
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var result = confirm("Are you sure you want to delete?");
+            if (result) {
+                $.ajax({
+                    type: 'DELETE',
+                    url: 'api/delete-post/' + tweetUuid + '/',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    success: function (response) {
+                        $('#post-container-' + tweetUuid).remove();
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+            }
+        }
+
+        function openEditModal(tweetUuid) {
+            var modal = document.getElementById('editModal');
+            modal.style.display = 'block';
+
+            $.ajax({
+                type: 'GET',
+                url: 'api/get-tweet/' + tweetUuid + '/',  
+                success: function (response) {
+                    if (response.success) {
+                        var tweet = response.tweet;
+                        document.getElementById('editContent').value = tweet.content;
+
+                        var imageDisplay = document.getElementById('imageDisplay');
+                        imageDisplay.innerHTML = '';
+
+                        if (tweet.media) {
+                            var img = document.createElement('img');
+                            img.src = tweet.media;
+                            img.alt = 'Tweet Image';
+                            img.style.maxWidth = '100%'; 
+                            imageDisplay.appendChild(img);
+                        }
+                    } else {
+                        console.error('Failed to fetch tweet details');
+                    }
+                },
+                error: function (error) {
+                    console.error('Error fetching tweet details:', error);
+                }
+            });
+        }
+
+        function previewImage(input) {
+            var imageDisplay = document.getElementById('imageDisplay');
+            imageDisplay.innerHTML = '';
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Selected Image';
+                    img.style.maxWidth = '100%'; 
+                    imageDisplay.appendChild(img);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function closeEditModal() {
+            var modal = document.getElementById('editModal');
+            modal.style.display = 'none';
+        }
 
     </script>
 </head>
-
 
 <body>
 
@@ -145,7 +288,7 @@
                 </div>
 
                 <div class="nav-item bookmarks">
-                    <a href="#" class="nav-links">
+                    <a href="{% url 'accounts:bookmark' %}" class="nav-links">
                         <div class="nav-hover">
                             <div class="nav-icons">
                                 <img src="{% static 'images/bookmarks.svg' %}" alt="bookmarks icon" />
@@ -343,28 +486,34 @@
                 {% block tweets %}
 
                 {% for tweet in tweets %}
+
                 <div class="other-tweets-container">
                     <div class="other-tweets">
                         <div class="tweeter">
                             <div class="tweeter-profile">
                                 <img src="{{ tweet.user_profile.profileImage }}" alt="profie picture" />
                                 <div class="tweeter-name">
-                                    <a href="{% url 'accounts:profile-detail' profile_id=tweet.user_profile.id %}">
-                                        <p>
-                                            <span class="tweeter-account">{{ tweet.user_profile.display_name }}
-                                            </span>
-                                            <span class="freecodecamp-badge"><img
-                                                    src="{% static 'images/verified.svg' %}"
-                                                    alt="verification-badge" /></span>
-                                            <span class="tweeter-username">@{{ tweet.user_profile.display_name }}
-                                            </span>
-                                            <span>{{ tweet.updated_at.datetime }}</span>
-                                        </p>
-                                    </a>
+                                    <diV>
+                                        <a href="{% url 'accounts:profile-detail' profile_id=tweet.user_profile.id %}">
+                                            <p>
+                                                <span class="tweeter-account">{{ tweet.user_profile.display_name }}
+                                                </span>
+                                                <span class="freecodecamp-badge"><img
+                                                        src="{% static 'images/verified.svg' %}"
+                                                        alt="verification-badge" /></span>
+                                                <span class="tweeter-username">@{{ tweet.user_profile.display_name }}
+                                                </span>
+                                                <span>{{ tweet.updated_at.datetime }}</span>
+                                            </p>
+                                        </a>
+                                    </diV>
+                                    {% block more-icon %}
+
+                                    {% endblock %}
                                 </div>
                             </div>
 
-                            <div class="tweet">
+                            <div class="tweet" id="tweet-{{tweet.id}}">
                                 <div class="tweet-details">
                                     <div>
                                         <div class="tweet-text">
@@ -401,7 +550,8 @@
                                             </div>
 
                                             <div class="retweets">
-                                                <div>
+                                                <div class="retweet-button" id="retweet-button{{tweet.uuid}}"
+                                                    data-retweet-id="{{ tweet.uuid }}">
                                                     <svg xmlns:xlink="http://www.w3.org/1999/xlink"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                         aria-hidden="true"
@@ -415,9 +565,10 @@
                                                     </svg>
                                                 </div>
                                                 <div class="statistics">
-                                                    1,450
+                                                    <p id="retweet-count">{{ tweet.retweets|length }}</p>
                                                 </div>
                                             </div>
+
                                             <div class="likes">
                                                 <div class="like-button" data-tweet-id="{{ tweet.uuid }}"
                                                     style="cursor: pointer;">
@@ -437,9 +588,23 @@
                                                     {{ tweet.likes|length }}
                                                 </div>
                                             </div>
+
+                                            <div class="bookmark">
+                                                <div class="bookmark-icon" style="cursor:pointer"
+                                                    data-bookmark-id="{{ tweet.uuid }}">
+                                                    <img src="{% static 'images/bookmarks.svg' %}" alt="bookmarks icon"
+                                                        style="height:20;width:20;" />
+                                                </div>
+                                                <div class="statistics">
+                                                    {{tweet.bookmarks|length }}
+                                                </div>
+                                            </div>
+
                                         </div>
                                         <div class="user-tweet">
-                                            <form id="commentForm" action="{% url 'accounts:add-comment' tweet_uuid=tweet.uuid %}" method="post">
+                                            <form id="commentForm"
+                                                action="{% url 'accounts:add-comment' tweet_uuid=tweet.uuid %}"
+                                                method="post">
                                                 {% csrf_token %}
                                                 <div class="tweet-input-section">
                                                     <div class="shiva-profile img-2">
@@ -454,7 +619,8 @@
                                                 <div class="edit-tools">
                                                     <div class="tools-wrapper">
                                                         <div class="tools">
-                                                            <label for="image"><img src="{% static 'images/media.svg' %}"
+                                                            <label for="image"><img
+                                                                    src="{% static 'images/media.svg' %}"
                                                                     alt="media icon" /></label>
                                                             <input type="file" id="image" name="media" accept="image/*">
                                                         </div>
@@ -469,8 +635,6 @@
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
 
                     </div>
@@ -482,6 +646,7 @@
     </main>
     {% endblock %}
 
+    <div>
 </body>
 
 </html>

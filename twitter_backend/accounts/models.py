@@ -55,14 +55,14 @@ class TweetComments(models.Model):
     likes = models.ManyToManyField(User, blank=True, related_name='comment_likes')
 
 
-class TweetLike(models.Model):
+class TweetRetweet(models.Model):
     user =  models.ForeignKey(to=User, on_delete=models.CASCADE)
-    tweet = models.ForeignKey(Tweet,on_delete=models.CASCADE)
+    retweet = models.ForeignKey(Tweet,on_delete=models.CASCADE)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 
-# class TweetRetweet(models.Model):
-#     user =  models.ForeignKey(to=User, on_delete=models.CASCADE)
-#     retweet = models.ForeignKey(Tweet,on_delete=models.CASCADE)
-#     updated_at = models.DateTimeField(auto_now_add=True)
-
-
+class Bookmark(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    

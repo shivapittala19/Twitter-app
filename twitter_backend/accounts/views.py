@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.shortcuts import render, reverse
+from django.shortcuts import render, reverse, get_object_or_404
 from django.http import HttpResponseRedirect,JsonResponse
 
 # rest framework
@@ -9,10 +9,12 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.authentication import BasicAuthentication,SessionAuthentication
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated     
+
 # App imports
-from  . import serializers, models
-from .models import Tweet, UserProfile, Followers
+from  . import serializers
+from .models import Tweet, UserProfile, TweetRetweet, Bookmark
 
 @api_view(['GET', 'POST'])
 @renderer_classes([TemplateHTMLRenderer])
@@ -68,7 +70,7 @@ class HomePageView(APIView):
     def get(self, request, format=None):
         if request.user.is_anonymous:
             return HttpResponseRedirect(reverse('accounts:login')) 
-        queryset = Tweet.objects.all().order_by('-updated_at')
+        queryset = Tweet.objects.exclude(user=request.user).order_by('-updated_at')
         serializer = serializers.TweetSerializer(queryset, many=True)
         current_user = UserProfile.objects.get(user = request.user)
         user_serializer = serializers.UserProfileSerializer(current_user)
@@ -117,7 +119,6 @@ class CreateTweetView(APIView):
         return HttpResponseRedirect(reverse('accounts:profile')) 
 
 
-from django.shortcuts import get_object_or_404
 class IncrementLikeView(APIView):
     authentication_classes = [SessionAuthentication]
     def post(self, request, tweet_uuid, *args, **kwargs):
@@ -145,12 +146,10 @@ class ProfileDetailView(APIView):
         profile_user_follow = request.user.followers
         current_user_follow = user_profile.user.followers
 
-        if user_profile.user in profile_user_follow.following.all():
-            is_following = False
-        else:
-            is_following = True
+        is_following = user_profile.user in  request.user.followers.following.all()
+    
         return render(
-            request, 
+            request,
             'accounts/others-profile.html',
             {   
                 'posts' : queryset,
@@ -197,3 +196,95 @@ class AddCommentAPIView(APIView):
         if serializer.is_valid():
             serializer.save(user=request.user, tweet=tweet)
         return HttpResponseRedirect(reverse('accounts:home'))
+
+class RetweetAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = serializers.RetweetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tweet_uuid = serializer.validated_data['tweet_uuid']
+
+        tweet = get_object_or_404(Tweet, uuid=tweet_uuid)
+
+        if TweetRetweet.objects.filter(user=request.user, retweet=tweet).exists():
+            TweetRetweet.objects.filter(user=request.user, retweet=tweet).delete()
+            retweet_status = False
+        else:
+            TweetRetweet.objects.create(user=request.user, retweet=tweet)
+            retweet_status = True
+        return Response(
+            {
+                'retweet_status': retweet_status,
+            }, status=status.HTTP_200_OK)
+
+
+class BookmarkAPIView(APIView):
+    def post(self, request,tweet_uuid, *args, **kwargs):
+        user = request.user  
+        tweet = get_object_or_404(Tweet, uuid=tweet_uuid)
+        
+        if Bookmark.objects.filter(user=user, tweet=tweet).exists():
+            existing_bookmark = Bookmark.objects.get(user=user, tweet=tweet)
+            existing_bookmark.delete()
+            return JsonResponse({'success': False, 'message': 'Bookmark deleted'})
+
+        # Create the bookmark
+        bookmark = Bookmark(user=user, tweet=tweet)
+        bookmark.save()
+
+        return JsonResponse({'success': True})
+
+class BookmarkDetailView(APIView):
+    def get(self, request):
+        queryset = Tweet.objects.filter(bookmark__user=request.user)
+        serializer = serializers.TweetSerializer(queryset, many=True)
+        return render(
+            request, 
+            'accounts/bookmark.html',
+            { 
+                'tweets': serializer.data,
+            }
+        )
+   
+class DeletePostAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, tweet_uuid):
+        tweet = get_object_or_404(Tweet, uuid = tweet_uuid)
+        self.check_object_permissions(request, tweet)
+        tweet.delete()
+        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
+    
+def get_tweet(request, tweet_uuid):
+    tweet = get_object_or_404(Tweet, uuid=tweet_uuid)
+    # You can customize the data you want to include in the response
+    data = {
+        'success': True,
+        'tweet': {
+            'id': tweet.id,
+            'content': tweet.content,
+            'media': tweet.media.url if tweet.media else None,
+            # Add other fields as needed
+        }
+    }
+    return JsonResponse(data)
+
+class UpdateTweetView(APIView):
+    def post(self, request, tweet_uuid, *args, **kwargs):
+        tweet = get_object_or_404(Tweet, uuid=tweet_uuid)
+        content = request.POST.get('content', tweet.content)
+        media = request.FILES.get('media', tweet.media)
+
+        # Update the tweet object with the new values
+        tweet.content = content
+        tweet.media = media
+        tweet.save()
+
+        # Return the updated tweet data in the response
+        data = {
+            'success': True,
+            'tweet': {
+                'id': tweet.id,
+                'content': tweet.content,
+                'media': tweet.media.url if tweet.media else None,
+            }
+        }
+        return HttpResponseRedirect(reverse('accounts:profile'))

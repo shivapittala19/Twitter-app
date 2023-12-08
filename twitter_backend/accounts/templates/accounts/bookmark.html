@@ -1,0 +1,20 @@
+{% extends 'accounts/home.html' %}
+
+{%  load static  %}
+{% block main-header %}
+<div class="main-section-header">
+    <div class="home-header">
+        <div class="shiva-profile">
+            <img src="{% static 'images/shiva.png' %}" alt="shiva's profile" />
+        </div>
+        <h2 class="main-section-title">Bookmarks</h2>
+    </div>
+    <div class="top-tweets-icon">
+        <img src="{% static 'images/stars.svg' %}" alt="top tweets icon" />
+    </div>
+</div>
+{% endblock%}
+
+{% block main-user-tweet %}
+
+{% endblock %}

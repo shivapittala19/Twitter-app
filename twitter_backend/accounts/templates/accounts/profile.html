@@ -52,7 +52,7 @@
         </div>
         <div class="follow-ing">
             <div class="posts">
-                <div class="post-text">Posts</div>
+                <div class="post-text">Tweets</div>
                 <div class="posts-count">{{posts|length}}</div>
             </div>
             <div class="followers">
@@ -66,4 +66,30 @@
         </div>
     </div>
 </main-profile>
+{% endblock %}
+
+{% block more-icon %}
+<div class="more-icon" id="post-container-{{ tweet.uuid }}">
+    <img src="{% static 'images/more-circle.svg' %}" alt="more icon" onclick="toggleDropdown(this)"/>
+    <div id="dropdown-menu" class="dropdown-content">
+        <a  onclick="openEditModal('{{tweet.uuid}}')" style="color: black;">Edit</a>
+        <a href="" onclick="confirmDelete('{{tweet.uuid}}')">Delete</a>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content popup">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <form id="editForm" class="form" action="{% url 'accounts:update-tweet' tweet.uuid %}" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            <!-- Textarea for content -->
+            <textarea id="editContent" name="content" rows="4" cols="50"></textarea>
+            <!-- Display area for the image -->
+            <div id="imageDisplay"></div>
+            <!-- File input for media -->
+            <input type="file" id="editMedia" name="media" onchange="previewImage(this)">
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</div>
 {% endblock %}

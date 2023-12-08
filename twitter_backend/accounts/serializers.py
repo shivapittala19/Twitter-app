@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Tweet,UserProfile, TweetComments
+from .models import Tweet,UserProfile, TweetComments, TweetRetweet, Bookmark
 
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,14 +23,28 @@ class TweetCommentsSerializer(serializers.ModelSerializer):
     class  Meta:
         model = TweetComments
         fields = '__all__'
-        
-        
+
+class TweetRetweetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TweetRetweet
+        fields = '__all__'
+ 
+ 
+class BookmarkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bookmark
+        fields = ['user', 'tweet', 'created_at']
+
+ 
 class TweetSerializer(serializers.ModelSerializer):
     user_profile = UserProfileSerializer(source='user.profile', read_only=True)
     comments = TweetCommentsSerializer(many=True,read_only=True,source="comment")
+    retweets = TweetRetweetSerializer(many=True, read_only=True, source="tweetretweet_set")
+    bookmarks = BookmarkSerializer(many=True, read_only=True, source="bookmark_set")
+
     class Meta:
         model = Tweet
-        fields = ['user','user_profile','uuid', 'content','media','updated_at','likes','comments']
+        fields = ['user','user_profile','uuid', 'content','media','updated_at','likes','comments','retweets','bookmarks']
         extra_kwargs = {
             'user_profile' : {'required':False},
             'media': {'required': False},
@@ -38,7 +52,9 @@ class TweetSerializer(serializers.ModelSerializer):
             'updated_at ': {'required': False},
             'uuid ': {'required': False},
             'likes': {'required': False},
-            'comments':{'requied':False}
+            'comments':{'requied':False},
+            'retweets': {'required': False},
+            'bookmarks': {'required': False}
         }
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -77,3 +93,8 @@ class CommentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Either 'comment_content' or 'media' is required.")
 
         return data
+
+class RetweetSerializer(serializers.Serializer):
+    tweet_uuid = serializers.UUIDField()
+
+

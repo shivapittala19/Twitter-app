@@ -1,19 +1,7 @@
 {% extends "accounts/profile.html" %}
 {% load static %}
 {% block main-user-tweet %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Retrieve the initial state (e.g., from the server response or your template context)
-        var isFollowedInitial = '{{ is_following|lower }}';  // Assuming initial_is_followed is a boolean variable
-        console.log(isFollowedInitial)
-        // Set the initial button text based on the initial state
-        var button = document.getElementById('followButton');
-        if (button) {
-            button.innerText = isFollowedInitial ? 'Unfollow' : 'Follow';
-        }
-        
-    })
-</script>
+
 <main-profile>
     <div class="cover-photo-container">
         <div class="cover-photo">
