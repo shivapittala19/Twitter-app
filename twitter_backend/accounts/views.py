@@ -98,6 +98,7 @@ class ProfilePageView(APIView):
                 'posts': queryset,
                 'following':request.user.followers.following.all(),
                 'followers':request.user.followers.followers.all(),
+                'retweets':TweetRetweet.objects.filter(user=request.user),
             }
         )
 
@@ -160,6 +161,7 @@ class ProfileDetailView(APIView):
                 'logged_user' : curent_user_serializer.data ,
                 'specific' : user_serializer.data,
                 'tweets': serializer.data,
+                'retweets':TweetRetweet.objects.filter(user=user_profile.user)
             }
         )
 
@@ -288,3 +290,18 @@ class UpdateTweetView(APIView):
             }
         }
         return HttpResponseRedirect(reverse('accounts:profile'))
+
+class TweetDetailView(APIView):
+    def get(self, request, tweet_uuid):
+        tweet = Tweet.objects.get(uuid=tweet_uuid)
+        serializer = serializers.TweetSerializer(tweet)
+        current_user = UserProfile.objects.get(user = request.user)
+        user_serializer = serializers.UserProfileSerializer(current_user)
+        return render(
+            request, 
+            'accounts/comments.html',
+            {
+                'tweet': serializer.data,
+                'logged_user':user_serializer.data
+            }
+        )

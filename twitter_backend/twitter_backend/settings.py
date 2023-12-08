@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-c#6z(fe=$j*n389_g!e376l2l)143*hgawb%y@p83n2my6i#u8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -80,14 +80,18 @@ WSGI_APPLICATION = 'twitter_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# postgresql://postgres:ace1afgdeEA212bEGcA3Ea4dafCAdbg3@viaduct.proxy.rlwy.net:30624/railway
+# postgresql://postgres:ace1afgdeEA212bEGcA3Ea4dafCAdbg3@postgres.railway.internal:5432/railway
+
+# PGPASSWORD=Cg4Ae*aega*fddFgA-BA1D4cC3d*E5C3 psql -h viaduct.proxy.rlwy.net -U postgres -p 10900 -d railway
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'twitter_db',
+        'NAME': 'railway',
         'USER': 'postgres',
-        'HOST':'127.0.0.1',
-        'PASSWORD': 'postgres',
-        'PORT':5432
+        'HOST':'viaduct.proxy.rlwy.net',
+        'PASSWORD': 'Cg4Ae*aega*fddFgA-BA1D4cC3d*E5C3',
+        'PORT':10900
         
     }
 }

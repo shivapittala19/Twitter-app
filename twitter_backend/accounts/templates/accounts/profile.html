@@ -50,19 +50,23 @@
             <div class="date-text">Joined Date</div>
             <div class="date" id="joined-date">{{logged_user.updated_at }}</div>
         </div>
-        <div class="follow-ing">
-            <div class="posts">
-                <div class="post-text">Tweets</div>
-                <div class="posts-count">{{posts|length}}</div>
-            </div>
-            <div class="followers">
-                <div class="follow">Followers</div>
-                <div class="follow-count">{{followers|length}}</div>
-            </div>
-            <div class="following">
-                <div class="fin">Following</div>
-                <div class="following-count">{{following|length}}</div>
-            </div>
+    </div>
+    <div class="follow-ing">
+        <div class="posts tweet-flex">
+            <div class="posts-count">{{posts|length}}</div>
+            <div class="fin">Tweets</div>
+        </div>
+        <div class="retweets tweet-flex">
+            <div class="following-count" style="margin-left:1px">{{retweets|length}}</div>
+            <div class="fin">retweets</div>
+        </div>
+        <div class="followers tweet-flex">
+            <div class="follow-count">{{followers|length}}</div>
+            <div class="fin">Followers</div> 
+        </div>
+        <div class="following tweet-flex">
+            <div class="following-count" style="margin-left:1px">{{following|length}}</div>
+            <div class="fin">Following</div>
         </div>
     </div>
 </main-profile>

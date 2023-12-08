@@ -179,7 +179,7 @@
 
             $.ajax({
                 type: 'GET',
-                url: 'api/get-tweet/' + tweetUuid + '/',  
+                url: 'api/get-tweet/' + tweetUuid + '/',
                 success: function (response) {
                     if (response.success) {
                         var tweet = response.tweet;
@@ -192,7 +192,7 @@
                             var img = document.createElement('img');
                             img.src = tweet.media;
                             img.alt = 'Tweet Image';
-                            img.style.maxWidth = '100%'; 
+                            img.style.maxWidth = '100%';
                             imageDisplay.appendChild(img);
                         }
                     } else {
@@ -215,7 +215,7 @@
                     var img = document.createElement('img');
                     img.src = e.target.result;
                     img.alt = 'Selected Image';
-                    img.style.maxWidth = '100%'; 
+                    img.style.maxWidth = '100%';
                     imageDisplay.appendChild(img);
                 };
                 reader.readAsDataURL(input.files[0]);
@@ -226,7 +226,9 @@
             var modal = document.getElementById('editModal');
             modal.style.display = 'none';
         }
-
+        function viewSinglePost(tweetUuid) {
+            window.location.href = `single-tweet/${tweetUuid}/`;
+        }
     </script>
 </head>
 
@@ -513,21 +515,23 @@
                                 </div>
                             </div>
 
-                            <div class="tweet" id="tweet-{{tweet.id}}">
+                            <div class="tweet">
                                 <div class="tweet-details">
                                     <div>
-                                        <div class="tweet-text">
-                                            <p class="tweet-text">
-                                                {{ tweet.content }} </p>
-                                        </div>
-                                        {% if tweet.media %}
-                                        <div class="tweet-image">
-                                            <img src="{{ tweet.media }}"
-                                                alt="{{ tweet.user_profile.display_name.username }}" />
-                                            <div class="tweet-image-caption">
-                                                <p>@{{ tweet.user_profile.display_name }}</p>
+                                        <div class="click-for-comments" id="tweet-comments-{{tweet.uuid}}" onclick="viewSinglePost('{{ tweet.uuid }}')">
+                                            <div class="tweet-text">
+                                                <p class="tweet-text">
+                                                    {{ tweet.content }} </p>
                                             </div>
-                                        </div>
+                                            {% if tweet.media %}
+                                            <div class="tweet-image">
+                                                <img src="{{ tweet.media }}"
+                                                    alt="{{ tweet.user_profile.display_name.username }}" />
+                                                <div class="tweet-image-caption">
+                                                    <p>@{{ tweet.user_profile.display_name }}</p>
+                                                </div>
+                                            </div>
+                                        </div>  
                                         {% endif %}
                                         <div class="tweet-reactions-2">
                                             <div class="replies">
@@ -601,37 +605,6 @@
                                             </div>
 
                                         </div>
-                                        <div class="user-tweet">
-                                            <form id="commentForm"
-                                                action="{% url 'accounts:add-comment' tweet_uuid=tweet.uuid %}"
-                                                method="post">
-                                                {% csrf_token %}
-                                                <div class="tweet-input-section">
-                                                    <div class="shiva-profile img-2">
-                                                        <img src="{{ logged_user.profileImage }}"
-                                                            alt="shiva's profile" />
-                                                    </div>
-                                                    <div class="tweet-input">
-                                                        <input type="text" class="tweet-input-button"
-                                                            placeholder="whats's happening" name="comment_content">
-                                                    </div>
-                                                </div>
-                                                <div class="edit-tools">
-                                                    <div class="tools-wrapper">
-                                                        <div class="tools">
-                                                            <label for="image"><img
-                                                                    src="{% static 'images/media.svg' %}"
-                                                                    alt="media icon" /></label>
-                                                            <input type="file" id="image" name="media" accept="image/*">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <button class="post-tweet" type="submit">Tweet</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>

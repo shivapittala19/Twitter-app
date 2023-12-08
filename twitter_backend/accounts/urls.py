@@ -22,5 +22,7 @@ urlpatterns = [
     path('bookmark',views.BookmarkDetailView.as_view(),name='bookmark'),
     path('profile/api/delete-post/<uuid:tweet_uuid>/', views.DeletePostAPIView.as_view(), name='delete-post'),
     path('profile/api/get-tweet/<uuid:tweet_uuid>/', views.get_tweet, name='get-tweet'),
-    path('update-tweet/<uuid:tweet_uuid>/',views.UpdateTweetView.as_view(),name='update-tweet')
+    path('update-tweet/<uuid:tweet_uuid>/',views.UpdateTweetView.as_view(),name='update-tweet'),
+    path('home/single-tweet/<uuid:tweet_uuid>/', views.TweetDetailView.as_view(), name='single_tweet'),
+
 ]   
